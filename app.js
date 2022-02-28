@@ -19,9 +19,9 @@ const url = 'https://gdn.paas.macrometa.io'
 const fabric = "_system"
 const port = 3000
 const apiKey = "" //set API key or use .env to set it
-const collectionName = "Coll"
-const streamName = "Stream"
-const streamWorker = "SWorker"
+const collectionName = "Luba"
+const streamName = "LubaS"
+const streamWorker = "LubSW"
 const regions = [
     "gdn-ap-west",
     "gdn-us-west",
@@ -62,7 +62,6 @@ async function createSW() {
         //  console.log(e);
     }
 }
-
 createSW()
 
 
@@ -97,7 +96,6 @@ const b = async function () {
 b();
 io.on('connection', function (socket) {
     // Use socket to communicate with this particular client only, sending it it's own id
-    socket.on('i am client', console.log);
     socket.on('chat message', (msg) => {
         msg = { chat: msg }
         console.log(msg);
@@ -108,3 +106,6 @@ io.on('connection', function (socket) {
 server.listen(port, () => {
     console.log(`Listening on ${port}`);
 });
+
+
+
