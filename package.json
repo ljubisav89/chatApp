@@ -10,7 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "atob": "^2.1.2",
+    "dotenv": "^16.0.0",
+    "ejs": "^3.1.6",
     "express": "^4.17.3",
-    "jsc8": "^0.16.3"
+    "jsc8": "^0.16.3",
+    "nodemon": "^2.0.15",
+    "path": "^0.12.7",
+    "socket.io": "^4.4.1"
   }
 }
