@@ -33,7 +33,11 @@
         <div class="chat">
             <div class="row">
                 <div class="col-3 offset-3">
-                    <ul id="messages"></ul>
+                    <ul id="messages">
+                    <% for(let i of data.docs){ %>
+                    <li id="messages"><%= i.chat %> </li>
+                    <% } %>
+                </ul>
                 </div>
             </div>
         </div>
@@ -46,6 +50,8 @@
                             aria-label="chat" aria-describedby="button-addon2">
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
+                    <button type="submit"><a href="/">Back to Login</a></button>
+
                 </form>
             </div>
         </div>
