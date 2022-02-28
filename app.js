@@ -2,7 +2,6 @@ if (process.env.NODE_ENV != "production") {
     require("dotenv").config()
 }
 const path = require('path')
-const { createRoom } = require('./util/helper')
 const jsc8 = require("jsc8");
 const express = require('express');
 const app = express();
@@ -20,9 +19,9 @@ const url = 'https://gdn.paas.macrometa.io'
 const fabric = "_system"
 const port = 3000
 const apiKey = "" //set API key or use .env to set it
-const collectionName = "chatC1"
-const streamName = "chatS1"
-const streamWorker = "ChatSW1"
+const collectionName = "Coll"
+const streamName = "Stream"
+const streamWorker = "SWorker"
 const regions = [
     "gdn-ap-west",
     "gdn-us-west",
@@ -39,17 +38,14 @@ const definition =
 @App:description('SW')
 @App:qlVersion('2')
 -- Define Source.
-CREATE SOURCE SampleInputTable WITH (type = 'database', collection = "${collectionName}", collection.type="doc" , replication.type="global", map.type='json') (chat string);
+CREATE SOURCE ${collectionName} WITH (type = 'database', collection = "${collectionName}", collection.type="doc" , replication.type="global", map.type='json') (chat string);
 -- Define Stream.
 CREATE SINK STREAM ${streamName} (chat string);
 -- Data Processing
 @info(name='Query')
 INSERT INTO ${streamName}
 SELECT chat
-FROM SampleInputTable;`
-
-
-
+FROM ${collectionName};`
 
 //connection
 const client = new jsc8({
@@ -57,25 +53,6 @@ const client = new jsc8({
     apiKey: process.env.APIKEY || apiKey,
     fabric
 })
-
-
-async function newRoom() {
-    try {
-        const newCollection = await client.createCollection(collectionName)
-        //console.log(newCollection);
-    } catch (e) {
-        //  console.log(e.response.body);
-    }
-}
-newRoom()
-async function createStream() {
-    try {
-        const stream_local = await client.createStream(streamName, true);
-    } catch (e) {
-        //console.log(e.response.body)
-    }
-}
-createStream();
 
 async function createSW() {
     try {
