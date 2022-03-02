@@ -44,7 +44,7 @@ app.get('/', (req, res) => {
 });
 app.post('/chat', async (req, res) => {
     let name = req.body.name
-    const docs = await client.getDocumentMany(collectionAndStreamName, 20);
+    const docs = await client.executeQuery(`FOR i IN ${collectionAndStreamName} sort i.time asc RETURN i`);
     res.render("chat", { data: { name: name, docs: docs } })
 });
 app.get('/chat', (req, res) => {
@@ -70,7 +70,7 @@ createConusmer();
 io.on('connection', function (socket) {
     // Use socket to communicate with this particular client only, sending it it's own id
     socket.on('chat message', (msg) => {
-        msg = { chat: msg }
+        msg = { chat: msg, time: Date.now() };
         saveMsg(msg)
     });
 });
