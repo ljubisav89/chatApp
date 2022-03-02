@@ -19,33 +19,8 @@ const url = 'https://gdn.paas.macrometa.io'
 const fabric = "_system"
 const port = 3000
 const apiKey = "" //set API key or use .env to set it
-const collectionName = "Luba"
-const streamName = "LubaS"
-const streamWorker = "LubSW"
-const regions = [
-    "gdn-ap-west",
-    "gdn-us-west",
-    "gdn-ap-sydney",
-    "gdn-eu-west",
-    "gdn-ap-south",
-    "gdn-ap-northeast",
-    "gdn-us-east",
-    "gdn-us-central",
-    "gdn-eu-central"
-]
-const definition =
-    `@App:name("${streamWorker}")
-@App:description('SW')
-@App:qlVersion('2')
--- Define Source.
-CREATE SOURCE ${collectionName} WITH (type = 'database', collection = "${collectionName}", collection.type="doc" , replication.type="global", map.type='json') (chat string);
--- Define Stream.
-CREATE SINK STREAM ${streamName} (chat string);
--- Data Processing
-@info(name='Query')
-INSERT INTO ${streamName}
-SELECT chat
-FROM ${collectionName};`
+const collectionAndStreamName = "ChatCollection" // Name of collection
+
 
 //connection
 const client = new jsc8({
@@ -54,52 +29,49 @@ const client = new jsc8({
     fabric
 })
 
-async function createSW() {
+async function createCollection() {
     try {
-        const streamapps = await client.createStreamApp(regions, definition);
-        await client.activateStreamApp(streamWorker, true);
+        const newColl = await client.createCollection(collectionAndStreamName, { stream: true });
+
     } catch (e) {
-        //  console.log(e);
+        //console.log(e.response.body);
     }
 }
-createSW()
-
+createCollection()
 
 app.get('/', (req, res) => {
     res.render("index");
 });
 app.post('/chat', async (req, res) => {
     let name = req.body.name
-    const docs = await client.getDocumentMany(collectionName, 20);
+    const docs = await client.getDocumentMany(collectionAndStreamName, 20);
     res.render("chat", { data: { name: name, docs: docs } })
 });
 app.get('/chat', (req, res) => {
     res.render("chat");
 });
 
-const a = async function (msg) {
-    const insertedDoc = await client.insertDocument(collectionName, msg);
+const saveMsg = async function (msg) {
+    const insertedDoc = await client.insertDocument(collectionAndStreamName, msg);
 
 };
 
-const b = async function () {
-    const consumer = await client.createStreamReader(streamName, "sub", true);
+const createConusmer = async function () {
+    const consumer = await client.createStreamReader(collectionAndStreamName, "sub", true, true);
     consumer.on("message", async (msg) => {
         const { payload, messageId } = JSON.parse(msg);
-        let m = (atob(payload).slice(9, -2)).split(":")
-        m = m[0] + " >> " + m[1]
+        let m = JSON.parse(atob(payload)).chat
         console.log(m);
         io.emit('time', { time: m });
         consumer.send(JSON.stringify({ messageId }));
     });
 };
-b();
+createConusmer();
 io.on('connection', function (socket) {
     // Use socket to communicate with this particular client only, sending it it's own id
     socket.on('chat message', (msg) => {
         msg = { chat: msg }
-        console.log(msg);
-        a(msg)
+        saveMsg(msg)
     });
 });
 
